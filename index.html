@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JCM Enterprise — Inquiry Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+/* ── Reset & Base ─────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --brand:#C8511A;--brand-lt:#FAECE7;--brand-dk:#993C1D;--brand-mid:#E86A2E;
+  --bg:#F5F4F1;--surface:#FFFFFF;--surface2:#F9F8F6;
+  --border:#E8E5E0;--border2:#D8D4CE;
+  --text:#1A1917;--text2:#6B6560;--text3:#9B958E;
+  --green:#1AAF7A;--green-lt:#E1F5EE;
+  --blue:#3B6CF7;--blue-lt:#E6EFFE;
+  --amber:#D97706;--amber-lt:#FEF3C7;
+  --purple:#7C3AED;--purple-lt:#EDE9FE;
+  --red:#DC2626;--red-lt:#FEE2E2;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
+  --shadow-lg:0 12px 32px rgba(0,0,0,.12),0 4px 8px rgba(0,0,0,.06);
+  --r-sm:6px;--r-md:10px;--r-lg:14px;--r-xl:20px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
+input,select,textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;transition:border-color .15s,box-shadow .15s;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(200,81,26,.1)}
+textarea{resize:vertical;min-height:72px}
+button{cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+button:active{transform:scale(.98)}
+label{font-size:12px;color:var(--text2);margin-bottom:5px;display:block;font-weight:500}
+.req{color:var(--brand)}
+.hidden{display:none!important}
+
+/* ── Buttons ──────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;font-weight:500;white-space:nowrap;box-shadow:var(--shadow)}
+.btn:hover{background:var(--surface2);border-color:var(--border2)}
+.btn-primary{background:var(--brand);color:#fff;border-color:var(--brand);box-shadow:0 2px 6px rgba(200,81,26,.3)}
+.btn-primary:hover{background:var(--brand-dk)}
+.btn-danger{color:var(--red);border-color:rgba(220,38,38,.2)}
+.btn-danger:hover{background:var(--red-lt)}
+.btn-sm{padding:5px 12px;font-size:12px;border-radius:var(--r-sm)}
+.btn-icon{padding:6px 8px;border-radius:var(--r-sm)}
+.btn-ghost{border:none;background:none;box-shadow:none;padding:6px 8px}
+.btn-ghost:hover{background:var(--surface2)}
+
+/* ── Layout ───────────────────────────────────────────── */
+.app{display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);height:54px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-icon{width:32px;height:32px;background:var(--brand);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:600;box-shadow:0 2px 6px rgba(200,81,26,.3)}
+.brand-name{font-size:15px;font-weight:600;color:var(--text)}
+.brand-tag{font-size:11px;color:var(--text3);font-weight:400}
+.layout{display:flex;flex:1}
+.sidebar{width:200px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:54px;height:calc(100vh - 54px);overflow-y:auto}
+.nav-section{padding:12px 0 4px}
+.nav-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:0 16px;margin-bottom:4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text2);border-left:2px solid transparent;transition:all .12s;position:relative}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{color:var(--brand);background:var(--brand-lt);border-left-color:var(--brand)}
+.nav-item i{font-size:17px;width:20px;text-align:center}
+.nav-badge{margin-left:auto;background:var(--brand);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;font-weight:600}
+.sidebar-footer{margin-top:auto;padding:16px;border-top:1px solid var(--border)}
+.content{flex:1;padding:24px;background:var(--bg);overflow-y:auto;max-width:100%}
+
+/* ── Cards ────────────────────────────────────────────── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;box-shadow:var(--shadow)}
+.card-header{margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start}
+
+/* ── Badges ───────────────────────────────────────────── */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.b-new{background:var(--blue-lt);color:#1E40AF}
+.b-ra{background:var(--amber-lt);color:#92400E}
+.b-rg{background:var(--green-lt);color:#065F46}
+.b-done{background:#D1FAE5;color:#064E3B}
+.b-lost{background:var(--red-lt);color:#991B1B}
+.bd-new{background:#3B82F6}.bd-ra{background:#F59E0B}.bd-rg{background:#10B981}.bd-done{background:#059669}.bd-lost{background:#EF4444}
+
+/* ── Page headers ─────────────────────────────────────── */
+.page-head{margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-start}
+.page-title{font-size:20px;font-weight:600;color:var(--text)}
+.page-sub{font-size:13px;color:var(--text2);margin-top:2px}
+
+/* ── Stats ────────────────────────────────────────────── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.stat-accent{border-top:3px solid var(--brand)}
+.stat-num{font-size:24px;font-weight:600;color:var(--text)}
+.stat-lbl{font-size:11px;color:var(--text2);margin-top:2px;font-weight:500}
+.stat-stripe{position:absolute;bottom:0;left:0;right:0;height:3px}
+
+/* ── Table ────────────────────────────────────────────── */
+.tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow)}
+.tbl{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+.tbl th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--text2);border-bottom:1px solid var(--border);background:var(--surface2);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.tbl td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr:hover td{background:var(--surface2);cursor:pointer}
+.tbl-empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.tbl-empty i{font-size:36px;display:block;margin-bottom:10px;opacity:.5}
+
+/* ── Filters ──────────────────────────────────────────── */
+.filter-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.filter-row select,.filter-row input{flex:1;min-width:100px;font-size:12px;padding:7px 11px}
+.filter-row input[type=date]{flex:none;width:auto}
+
+/* ── Form ─────────────────────────────────────────────── */
+.fg{margin-bottom:14px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-err{font-size:12px;color:var(--red);min-height:16px;margin-bottom:8px}
+.form-section{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;padding-top:4px}
+.ac-wrap{position:relative}
+.ac-drop{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-md);z-index:200;max-height:180px;overflow-y:auto;margin-top:3px;display:none;box-shadow:var(--shadow-md)}
+.ac-item{padding:9px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover{background:var(--surface2)}
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+
+/* ── Product table in form ────────────────────────────── */
+.prod-form-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;margin-bottom:12px}
+.prod-form-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.prod-form-tbl th{padding:8px 10px;font-size:11px;font-weight:600;color:var(--text2);border-bottom:1px solid var(--border);background:var(--surface2);text-align:left;text-transform:uppercase;letter-spacing:.04em}
+.prod-form-tbl td{padding:7px 8px;border-bottom:1px solid var(--border);background:var(--surface);vertical-align:middle}
+.prod-form-tbl tr:last-child td{border-bottom:none}
+
+/* ── Product table in detail ──────────────────────────── */
+.prod-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.prod-tbl th{padding:8px 12px;font-size:11px;font-weight:600;color:var(--text2);border-bottom:1px solid var(--border);background:var(--surface2);text-align:left;text-transform:uppercase;letter-spacing:.04em}
+.prod-tbl td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.prod-tbl tr:last-child td{border-bottom:none}
+.rate-val{color:var(--brand);font-weight:600;font-family:'DM Mono',monospace;font-size:13px}
+
+/* ── Modal ────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;display:flex;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto;backdrop-filter:blur(2px)}
+.modal{background:var(--surface);border-radius:var(--r-xl);width:580px;max-width:100%;border:1px solid var(--border);box-shadow:var(--shadow-lg);overflow:hidden}
+.modal-head{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start}
+.modal-body{padding:20px;max-height:56vh;overflow-y:auto}
+.modal-foot{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--surface2)}
+.detail-row{display:flex;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);gap:12px;font-size:13px}
+.detail-row:last-child{border-bottom:none}
+.detail-lbl{color:var(--text2);min-width:110px;flex-shrink:0;font-size:12px;font-weight:500;padding-top:1px}
+.detail-val{color:var(--text);flex:1}
+.hist-item{font-size:12px;padding:6px 0;border-bottom:1px solid var(--border);display:flex;gap:10px}
+.hist-item:last-child{border-bottom:none}
+.hist-time{color:var(--text3);flex-shrink:0;min-width:110px;font-family:'DM Mono',monospace;font-size:11px;padding-top:1px}
+.hist-txt{color:var(--text2)}
+
+/* ── Stage pills ──────────────────────────────────────── */
+.stage-pills{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.stage-pill{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text2);transition:all .12s}
+.stage-pill:hover,.stage-pill.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.stage-pill.lost-pill:hover{background:var(--red);border-color:var(--red);color:#fff}
+.lost-form{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-md);padding:14px;margin-top:10px}
+
+/* ── Kanban ───────────────────────────────────────────── */
+.kanban{display:flex;gap:12px;overflow-x:auto;padding-bottom:16px;align-items:flex-start}
+.k-col{flex:0 0 210px;display:flex;flex-direction:column}
+.k-col-head{padding:10px 14px;border-radius:var(--r-md) var(--r-md) 0 0;display:flex;align-items:center;justify-content:space-between}
+.k-col-title{font-size:13px;font-weight:600;color:#fff}
+.k-col-count{background:rgba(255,255,255,.25);color:#fff;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600}
+.k-col-body{background:var(--surface2);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r-md) var(--r-md);flex:1;padding:8px;display:flex;flex-direction:column;gap:8px;min-height:120px}
+.k-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:12px;cursor:pointer;box-shadow:var(--shadow);transition:box-shadow .15s,transform .15s}
+.k-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.k-company{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.k-customer{font-size:11px;color:var(--text2);margin-bottom:8px}
+.k-prods{font-size:11px;color:var(--text3);line-height:1.6}
+.k-prod-line{display:flex;justify-content:space-between;align-items:center}
+.k-rate{color:var(--brand);font-weight:600;font-family:'DM Mono',monospace;font-size:11px}
+.k-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.k-sales-name{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px}
+.k-date{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
+.k-empty{text-align:center;padding:20px 8px;color:var(--text3);font-size:12px}
+
+/* ── Avatar / initial ─────────────────────────────────── */
+.av{width:32px;height:32px;border-radius:50%;background:var(--brand-lt);color:var(--brand);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.ci{border-radius:8px;background:var(--brand-lt);color:var(--brand);display:inline-flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0}
+
+/* ── User rows ────────────────────────────────────────── */
+.user-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.user-row:last-child{border-bottom:none}
+.role-tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500}
+.tag-mgr{background:var(--amber-lt);color:#92400E}
+.tag-sales{background:var(--blue-lt);color:#1E40AF}
+
+/* ── Login ────────────────────────────────────────────── */
+.login-bg{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);background-image:radial-gradient(circle at 30% 20%,rgba(200,81,26,.06) 0%,transparent 50%),radial-gradient(circle at 70% 80%,rgba(59,108,247,.05) 0%,transparent 50%)}
+.login-box{width:380px;max-width:calc(100vw - 32px)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-icon{width:56px;height:56px;background:var(--brand);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 4px 16px rgba(200,81,26,.3)}
+.login-icon i{color:#fff;font-size:26px}
+.login-title{font-size:22px;font-weight:600;color:var(--text)}
+.login-sub{font-size:13px;color:var(--text2);margin-top:4px}
+
+/* ── Spinner ──────────────────────────────────────────── */
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.7);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.loading-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px 32px;text-align:center;box-shadow:var(--shadow-lg)}
+
+/* ── Toast ────────────────────────────────────────────── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;padding:10px 18px;border-radius:var(--r-md);font-size:13px;z-index:9999;box-shadow:var(--shadow-md);opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ─────────────────────────────────────────────────
+// PASTE YOUR GOOGLE APPS SCRIPT URL BELOW AFTER DEPLOYING
+const API_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
+
+const STAGES = ['New Inquiry','Rate Asked','Rate Given','Order Complete','Lost'];
+const ACTIVE_STAGES = ['New Inquiry','Rate Asked','Rate Given','Order Complete'];
+const SOURCES = ['WhatsApp','Call','Walk-in','Email','Field Visit','Reference'];
+const LOST_R = ['High Price','Bought from competitor','Customer not responding'];
+const PROD_STATUS = ['Pending','Rate Asked','Rate Given','Confirmed','Not Required'];
+
+const KAN_COLOR = {
+  'New Inquiry':'#3B6CF7','Rate Asked':'#D97706',
+  'Rate Given':'#059669','Order Complete':'#047857','Lost':'#DC2626'
+};
+const BADGE_CLS = {
+  'New Inquiry':'b-new','Rate Asked':'b-ra',
+  'Rate Given':'b-rg','Order Complete':'b-done','Lost':'b-lost'
+};
+const DOT_CLS = {
+  'New Inquiry':'bd-new','Rate Asked':'bd-ra',
+  'Rate Given':'bd-rg','Order Complete':'bd-done','Lost':'bd-lost'
+};
+
+let STATE = {
+  user: null, page: 'dashboard',
+  users: [], inquiries: [],
+  fs: 'all', fp: 'all', fsrc: 'all', fd: '', fq: '',
+  editId: null
+};
+let formProds = [{name:'',qty:'',rate:'',status:'Pending'}];
+
+// ── API ────────────────────────────────────────────────────
+async function api(params) {
+  try {
+    const url = API_URL + '?' + new URLSearchParams(params).toString();
+    const res = await fetch(url);
+    return await res.json();
+  } catch(e) {
+    console.error('API error', e);
+    return { success: false, error: e.message };
+  }
+}
+
+function showLoading(msg='Loading...') {
+  let el = document.getElementById('loading');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'loading';
+    el.className = 'loading-overlay';
+    el.innerHTML = `<div class="loading-box"><div class="spinner" style="border-color:rgba(200,81,26,.3);border-top-color:var(--brand);width:28px;height:28px;margin:0 auto 12px"></div><div style="font-size:13px;color:var(--text2)">${msg}</div></div>`;
+    document.body.appendChild(el);
+  }
+}
+function hideLoading() { const el = document.getElementById('loading'); if(el) el.remove(); }
+
+function toast(msg, duration=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// ── Init ───────────────────────────────────────────────────
+async function init() {
+  showLoading('Starting up...');
+  const [ur, ir] = await Promise.all([api({action:'getUsers'}), api({action:'getInquiries'})]);
+  STATE.users = ur.success ? ur.data : [];
+  STATE.inquiries = ir.success ? ir.data : [];
+  hideLoading();
+  draw();
+}
+
+function draw() { document.getElementById('app').innerHTML = ''; buildApp(); }
+
+function buildApp() {
+  if (!STATE.user) { buildLogin(); return; }
+  buildShell();
+}
+
+// ── Login ──────────────────────────────────────────────────
+function buildLogin() {
+  const r = document.getElementById('app');
+  r.innerHTML = `
+  <div class="login-bg">
+    <div class="login-box">
+      <div class="login-logo">
+        <div class="login-icon"><i class="ti ti-building-store"></i></div>
+        <div class="login-title">JCM Enterprise</div>
+        <div class="login-sub">Inquiry Management System</div>
+      </div>
+      <div class="card">
+        <div class="fg">
+          <label>Your name</label>
+          <input id="ln" placeholder="Enter your name" autocomplete="off" list="ulist">
+          <datalist id="ulist">${STATE.users.map(u=>`<option value="${u.name}">`).join('')}</datalist>
+        </div>
+        <div class="fg">
+          <label>Password</label>
+          <input id="lp" type="password" placeholder="Enter password">
+        </div>
+        <div class="form-err" id="lerr"></div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:11px" onclick="doLogin()">
+          <i class="ti ti-login"></i> Sign in
+        </button>
+      </div>
+      <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--text3)">
+        Default login: Manager / manager123
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('lp').onkeydown = e => { if(e.key==='Enter') doLogin(); };
+}
+
+function doLogin() {
+  const n = document.getElementById('ln').value.trim().toLowerCase();
+  const p = document.getElementById('lp').value;
+  const u = STATE.users.find(x => x.name.toLowerCase()===n && x.password===p);
+  if (!u) { document.getElementById('lerr').textContent = 'Incorrect name or password.'; return; }
+  STATE.user = u;
+  STATE.page = u.role==='manager' ? 'dashboard' : 'inquiries';
+  draw();
+}
+function doLogout() { STATE.user = null; draw(); }
+
+// ── Shell ──────────────────────────────────────────────────
+function buildShell() {
+  const isMgr = STATE.user.role === 'manager';
+  const nav = isMgr
+    ? [{id:'dashboard',ic:'ti-layout-dashboard',lb:'Dashboard'},
+       {id:'inquiries',ic:'ti-list-details',lb:'My Inquiries'},
+       {id:'new',ic:'ti-plus',lb:'New Inquiry'},
+       {id:'all',ic:'ti-users',lb:'All Inquiries'},
+       {id:'users',ic:'ti-user-cog',lb:'Users'}]
+    : [{id:'inquiries',ic:'ti-list-details',lb:'My Inquiries'},
+       {id:'new',ic:'ti-plus',lb:'New Inquiry'}];
+  const ini = STATE.user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const newCount = STATE.inquiries.filter(i=>i.stage==='New Inquiry').length;
+  document.getElementById('app').innerHTML = `
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-icon">J</div>
+        <div><div class="brand-name">JCM Enterprise</div><div class="brand-tag">Inquiry Manager</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="av">${ini}</div>
+          <div><div style="font-size:13px;font-weight:600">${STATE.user.name}</div><div style="font-size:11px;color:var(--text3)">${STATE.user.role}</div></div>
+        </div>
+        <button class="btn btn-sm" onclick="doLogout()"><i class="ti ti-logout"></i> Sign out</button>
+      </div>
+    </div>
+    <div class="layout">
+      <div class="sidebar">
+        <div class="nav-section">
+          ${nav.map(n=>`
+          <div class="nav-item ${STATE.page===n.id?'active':''}" onclick="goPage('${n.id}')">
+            <i class="ti ${n.ic}"></i>${n.lb}
+            ${n.id==='inquiries'&&newCount>0?`<span class="nav-badge">${newCount}</span>`:''}
+          </div>`).join('')}
+        </div>
+        <div class="sidebar-footer">
+          <div style="font-size:11px;font-weight:600;color:var(--brand)">Save Production Loss</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">Since 2003 · Gujarat, India</div>
+        </div>
+      </div>
+      <div class="content" id="ca"></div>
+    </div>
+  </div>
+  <div id="ms"></div>`;
+  renderPage();
+}
+
+function goPage(pg) {
+  STATE.page = pg;
+  document.querySelectorAll('.nav-item').forEach(el => {
+    const map = {dashboard:'Dashboard',inquiries:'My Inquiries',new:'New Inquiry',all:'All Inquiries',users:'Users'};
+    el.classList.toggle('active', el.textContent.trim()===map[pg]);
+  });
+  renderPage();
+}
+
+function renderPage() {
+  const ca = document.getElementById('ca'); if(!ca) return;
+  const p = STATE.page;
+  if      (p==='dashboard')  pgDash(ca);
+  else if (p==='inquiries')  pgInq(ca);
+  else if (p==='new')        pgNew(ca);
+  else if (p==='all')        pgAll(ca);
+  else if (p==='users')      pgUsers(ca);
+}
+
+// ── Dashboard (Kanban) ─────────────────────────────────────
+function pgDash(ca) {
+  const all = STATE.inquiries;
+  ca.innerHTML = `
+  <div class="page-head">
+    <div><div class="page-title">Inquiry Pipeline</div><div class="page-sub">${all.length} total inquiries</div></div>
+    <button class="btn btn-primary btn-sm" onclick="goPage('new')"><i class="ti ti-plus"></i> New Inquiry</button>
+  </div>
+  <div class="kanban" id="kanban"></div>
+  <div style="margin-top:24px">
+    <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Lost Inquiries</div>
+    <div id="lost-wrap"></div>
+  </div>`;
+
+  const kb = document.getElementById('kanban');
+  ACTIVE_STAGES.forEach(stage => {
+    const cards = all.filter(i=>i.stage===stage);
+    const col = document.createElement('div');
+    col.className = 'k-col';
+    col.innerHTML = `
+    <div class="k-col-head" style="background:${KAN_COLOR[stage]}">
+      <span class="k-col-title">${stage}</span>
+      <span class="k-col-count">${cards.length}</span>
+    </div>
+    <div class="k-col-body">
+      ${cards.length ? cards.map(i=>`
+      <div class="k-card" onclick="openDetail('${i.id}')">
+        <div class="k-company">${i.company}</div>
+        <div class="k-customer">${i.customer} · ${i.contact}</div>
+        <div class="k-prods">
+          ${(i.products||[]).map(p=>`
+          <div class="k-prod-line">
+            <span>· ${p.name}${p.qty?` <span style="color:var(--text3)">(${p.qty})</span>`:''}</span>
+            ${p.rate?`<span class="k-rate">${p.rate}</span>`:''}
+          </div>`).join('')}
+        </div>
+        <div class="k-foot">
+          <span class="k-sales-name"><i class="ti ti-user" style="font-size:11px"></i>${i.salesName}</span>
+          <span class="k-date">${fd(i.createdAt)}</span>
+        </div>
+      </div>`).join('') : '<div class="k-empty">No inquiries</div>'}
+    </div>`;
+    kb.appendChild(col);
+  });
+
+  const lost = all.filter(i=>i.stage==='Lost');
+  const lw = document.getElementById('lost-wrap');
+  if (!lost.length) { lw.innerHTML='<div style="font-size:13px;color:var(--text3);padding:12px 0">No lost inquiries.</div>'; return; }
+  lw.innerHTML = `<div class="tbl-wrap"><table class="tbl">
+    <colgroup><col style="width:20%"><col style="width:15%"><col style="width:28%"><col style="width:20%"><col style="width:10%"><col style="width:7%"></colgroup>
+    <thead><tr><th>Company</th><th>Customer</th><th>Products</th><th>Lost reason</th><th>Sales person</th><th>Date</th></tr></thead>
+    <tbody>${lost.map(i=>`<tr onclick="openDetail('${i.id}')">
+      <td style="font-weight:600">${i.company}</td>
+      <td>${i.customer}</td>
+      <td style="color:var(--text2)">${(i.products||[]).map(p=>p.name).join(', ')}</td>
+      <td style="color:var(--red)">${i.lostReason||'—'}</td>
+      <td style="color:var(--text2)">${i.salesName}</td>
+      <td style="color:var(--text3)">${fd(i.createdAt)}</td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+// ── My Inquiries ───────────────────────────────────────────
+function pgInq(ca) {
+  const isMgr = STATE.user.role==='manager';
+  let list = isMgr ? STATE.inquiries.slice() : STATE.inquiries.filter(i=>i.salesId===STATE.user.id);
+  list = list.sort((a,b)=>b.createdAt-a.createdAt);
+  if (STATE.fs!=='all') list = list.filter(i=>i.stage===STATE.fs);
+  if (STATE.fq) { const q=STATE.fq.toLowerCase(); list=list.filter(i=>i.company.toLowerCase().includes(q)||i.customer.toLowerCase().includes(q)||(i.products||[]).some(p=>p.name.toLowerCase().includes(q))); }
+  ca.innerHTML = `
+  <div class="page-head">
+    <div><div class="page-title">My Inquiries</div><div class="page-sub">${list.length} record${list.length!==1?'s':''}</div></div>
+    <button class="btn btn-primary btn-sm" onclick="goPage('new')"><i class="ti ti-plus"></i> New</button>
+  </div>
+  <div class="filter-row">
+    <select onchange="STATE.fs=this.value;renderPage()">
+      <option value="all">All stages</option>
+      ${STAGES.map(s=>`<option value="${s}" ${STATE.fs===s?'selected':''}>${s}</option>`).join('')}
+    </select>
+    <input placeholder="Search company, customer, product..." oninput="STATE.fq=this.value;renderPage()" value="${STATE.fq}" style="flex:2;min-width:160px">
+  </div>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <colgroup><col style="width:20%"><col style="width:16%"><col style="width:24%"><col style="width:6%"><col style="width:10%"><col style="width:14%"><col style="width:10%"></colgroup>
+      <thead><tr><th>Company</th><th>Customer</th><th>Products</th><th>Items</th><th>Source</th><th>Stage</th><th>Date</th></tr></thead>
+      <tbody>${list.length ? list.map(i=>`<tr onclick="openDetail('${i.id}')">
+        <td><div style="display:flex;align-items:center;gap:8px"><div class="ci" style="width:28px;height:28px;font-size:11px">${i.company[0]}</div><span style="font-weight:600">${i.company}</span></div></td>
+        <td>${i.customer}<br><span style="font-size:11px;color:var(--text3)">${i.contact}</span></td>
+        <td style="color:var(--text2)">${(i.products||[]).map(p=>p.name).join(', ')}</td>
+        <td style="text-align:center;font-weight:600">${(i.products||[]).length}</td>
+        <td>${i.source}</td>
+        <td>${badgeHtml(i.stage)}</td>
+        <td style="color:var(--text3);font-size:12px">${fd(i.createdAt)}</td>
+      </tr>`).join('') : '<tr><td colspan="7"><div class="tbl-empty"><i class="ti ti-inbox"></i>No inquiries yet</div></td></tr>'}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+// ── All Inquiries (Manager) ────────────────────────────────
+function pgAll(ca) {
+  const all = STATE.inquiries;
+  const salesUsers = STATE.users.filter(u=>u.role!=='manager');
+  let list = all.slice().sort((a,b)=>b.createdAt-a.createdAt);
+  if (STATE.fs!=='all')  list = list.filter(i=>i.stage===STATE.fs);
+  if (STATE.fp!=='all')  list = list.filter(i=>i.salesId===STATE.fp);
+  if (STATE.fsrc!=='all') list = list.filter(i=>i.source===STATE.fsrc);
+  if (STATE.fd) list = list.filter(i=>new Date(i.createdAt).toISOString().startsWith(STATE.fd));
+  if (STATE.fq) { const q=STATE.fq.toLowerCase(); list=list.filter(i=>i.company.toLowerCase().includes(q)||i.customer.toLowerCase().includes(q)||(i.products||[]).some(p=>p.name.toLowerCase().includes(q))); }
+  ca.innerHTML = `
+  <div class="page-head">
+    <div><div class="page-title">All Inquiries</div><div class="page-sub">Manager view — ${all.length} total records</div></div>
+  </div>
+  <div class="stats-row" style="grid-template-columns:repeat(${STAGES.length},1fr)">
+    ${STAGES.map(s=>`<div class="stat" style="border-top:3px solid ${KAN_COLOR[s]}">
+      <div class="stat-num">${all.filter(i=>i.stage===s).length}</div>
+      <div class="stat-lbl">${s}</div>
+    </div>`).join('')}
+  </div>
+  <div class="filter-row">
+    <select onchange="STATE.fs=this.value;renderPage()"><option value="all">All stages</option>${STAGES.map(s=>`<option value="${s}" ${STATE.fs===s?'selected':''}>${s}</option>`).join('')}</select>
+    <select onchange="STATE.fp=this.value;renderPage()"><option value="all">All sales persons</option>${salesUsers.map(u=>`<option value="${u.id}" ${STATE.fp===u.id?'selected':''}>${u.name}</option>`).join('')}</select>
+    <select onchange="STATE.fsrc=this.value;renderPage()"><option value="all">All sources</option>${SOURCES.map(s=>`<option value="${s}" ${STATE.fsrc===s?'selected':''}>${s}</option>`).join('')}</select>
+    <input type="date" value="${STATE.fd}" onchange="STATE.fd=this.value;renderPage()">
+    <input placeholder="Search..." oninput="STATE.fq=this.value;renderPage()" value="${STATE.fq}" style="flex:2;min-width:130px">
+  </div>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <colgroup><col style="width:16%"><col style="width:13%"><col style="width:18%"><col style="width:5%"><col style="width:9%"><col style="width:13%"><col style="width:12%"><col style="width:9%"><col style="width:5%"></colgroup>
+      <thead><tr><th>Company</th><th>Customer</th><th>Products</th><th>Items</th><th>Source</th><th>Stage</th><th>Sales person</th><th>Date</th><th></th></tr></thead>
+      <tbody>${list.length ? list.map(i=>`<tr>
+        <td onclick="openDetail('${i.id}')"><div style="display:flex;align-items:center;gap:7px"><div class="ci" style="width:26px;height:26px;font-size:11px">${i.company[0]}</div><span style="font-weight:600">${i.company}</span></div></td>
+        <td onclick="openDetail('${i.id}')">${i.customer}</td>
+        <td onclick="openDetail('${i.id}')" style="color:var(--text2)">${(i.products||[]).map(p=>p.name).join(', ')}</td>
+        <td onclick="openDetail('${i.id}')" style="text-align:center;font-weight:600">${(i.products||[]).length}</td>
+        <td onclick="openDetail('${i.id}')">${i.source}</td>
+        <td onclick="openDetail('${i.id}')">${badgeHtml(i.stage)}${i.lostReason?`<br><span style="font-size:11px;color:var(--red)">${i.lostReason}</span>`:''}</td>
+        <td onclick="openDetail('${i.id}')" style="color:var(--text2)">${i.salesName}</td>
+        <td onclick="openDetail('${i.id}')" style="color:var(--text3);font-size:12px">${fd(i.createdAt)}</td>
+        <td><div style="display:flex;gap:3px">
+          <button class="btn btn-icon btn-sm" onclick="openEdit('${i.id}')" title="Edit"><i class="ti ti-edit" style="font-size:13px"></i></button>
+          <button class="btn btn-icon btn-sm btn-danger" onclick="delInq('${i.id}')" title="Delete"><i class="ti ti-trash" style="font-size:13px"></i></button>
+        </div></td>
+      </tr>`).join('') : '<tr><td colspan="9"><div class="tbl-empty"><i class="ti ti-search"></i>No records match filters</div></td></tr>'}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+// ── New / Edit Inquiry ─────────────────────────────────────
+function pgNew(ca) {
+  const editing = STATE.editId ? STATE.inquiries.find(i=>i.id===STATE.editId) : null;
+  if (editing && STATE.editId && formProds.length===1 && formProds[0].name==='') {
+    formProds = editing.products.map(p=>({...p}));
+  }
+  ca.innerHTML = `
+  <div style="max-width:600px">
+    <div class="page-head"><div>
+      <div class="page-title">${editing?'Edit Inquiry':'New Inquiry'}</div>
+      <div class="page-sub">${editing?'Update inquiry details':'Log a new customer inquiry'}</div>
+    </div></div>
+    <div class="card">
+      <div class="form-section">Customer details</div>
+      <div class="fg ac-wrap">
+        <label>Company name <span class="req">*</span></label>
+        <input id="fc" placeholder="Start typing company name..." autocomplete="off" oninput="acCo(this)" value="${editing?editing.company:''}">
+        <div id="ac-co" class="ac-drop"></div>
+      </div>
+      <div class="fg ac-wrap">
+        <label>Customer name <span class="req">*</span></label>
+        <input id="fcu" placeholder="Contact person" autocomplete="off" value="${editing?editing.customer:''}">
+        <div id="ac-ct" class="ac-drop"></div>
+      </div>
+      <div class="frow">
+        <div class="fg"><label>Contact number <span class="req">*</span></label><input id="fco" placeholder="+91 98765 43210" value="${editing?editing.contact:''}"></div>
+        <div class="fg"><label>Source <span class="req">*</span></label>
+          <select id="fsr"><option value="">Select source...</option>${SOURCES.map(s=>`<option ${editing&&editing.source===s?'selected':''}>${s}</option>`).join('')}</select>
+        </div>
+      </div>
+      <div class="fg"><label>Stage</label>
+        <select id="fst">${STAGES.filter(s=>s!=='Lost').map(s=>`<option ${editing&&editing.stage===s?'selected':''}>${s}</option>`).join('')}</select>
+      </div>
+      <div class="divider"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="form-section" style="margin:0">Products <span class="req">*</span></div>
+        <button class="btn btn-sm" onclick="addProdRow()" type="button"><i class="ti ti-plus"></i> Add product</button>
+      </div>
+      <div class="prod-form-wrap">
+        <table class="prod-form-tbl">
+          <thead><tr>
+            <th style="width:36%">Product name</th>
+            <th style="width:17%">Quantity</th>
+            <th style="width:17%">Rate</th>
+            <th style="width:22%">Status</th>
+            <th style="width:8%"></th>
+          </tr></thead>
+          <tbody id="prod-body"></tbody>
+        </table>
+      </div>
+      <div class="fg"><label>Note / instructions</label><textarea id="fnt" placeholder="Any special instructions or notes...">${editing?editing.note:''}</textarea></div>
+      <div class="form-err" id="fe"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="submitInq()"><i class="ti ti-device-floppy"></i> ${editing?'Save changes':'Save inquiry'}</button>
+        <button class="btn" onclick="cancelNew()"><i class="ti ti-x"></i> Cancel</button>
+      </div>
+    </div>
+  </div>`;
+  renderProdRows();
+  document.getElementById('fc').addEventListener('blur',()=>setTimeout(()=>{ const d=document.getElementById('ac-co'); if(d) d.style.display='none'; },200));
+  document.getElementById('fcu').addEventListener('blur',()=>setTimeout(()=>{ const d=document.getElementById('ac-ct'); if(d) d.style.display='none'; },200));
+}
+
+function renderProdRows() {
+  const tb = document.getElementById('prod-body'); if(!tb) return;
+  tb.innerHTML = formProds.map((p,i)=>`<tr>
+    <td><input placeholder="e.g. 6205 Ball Bearing" value="${p.name}" oninput="formProds[${i}].name=this.value" style="font-size:13px"></td>
+    <td><input placeholder="50 pcs" value="${p.qty}" oninput="formProds[${i}].qty=this.value" style="font-size:13px"></td>
+    <td><input placeholder="₹45/pc" value="${p.rate}" oninput="formProds[${i}].rate=this.value" style="font-size:13px;color:var(--brand);font-weight:500"></td>
+    <td><select onchange="formProds[${i}].status=this.value" style="font-size:12px">${PROD_STATUS.map(s=>`<option ${p.status===s?'selected':''}>${s}</option>`).join('')}</select></td>
+    <td style="text-align:center">${formProds.length>1?`<button class="btn btn-icon btn-sm btn-danger" onclick="removeProdRow(${i})" title="Remove"><i class="ti ti-trash" style="font-size:12px"></i></button>`:''}</td>
+  </tr>`).join('');
+}
+function addProdRow() { formProds.push({name:'',qty:'',rate:'',status:'Pending'}); renderProdRows(); }
+function removeProdRow(i) { if(formProds.length<=1) return; formProds.splice(i,1); renderProdRows(); }
+function cancelNew() { STATE.editId=null; formProds=[{name:'',qty:'',rate:'',status:'Pending'}]; STATE.page=STATE.user.role==='manager'?'all':'inquiries'; renderPage(); }
+
+function acCo(el) {
+  const v = el.value.trim().toLowerCase();
+  const drop = document.getElementById('ac-co');
+  if (v.length<1) { drop.style.display='none'; return; }
+  const map = {};
+  STATE.inquiries.forEach(i=>{ if(i.company.toLowerCase().includes(v)) map[i.company]=(map[i.company]||[]).concat(i); });
+  const keys = Object.keys(map);
+  if (!keys.length) { drop.style.display='none'; return; }
+  drop.innerHTML = keys.slice(0,6).map(k=>`<div class="ac-item" onmousedown="pickCo('${k.replace(/'/g,"\\'")}')"><div class="ci" style="width:22px;height:22px;font-size:10px">${k[0]}</div>${k}</div>`).join('');
+  drop.style.display = 'block';
+}
+
+function pickCo(name) {
+  const drop = document.getElementById('ac-co'); if(drop) drop.style.display='none';
+  document.getElementById('fc').value = name;
+  const matches = STATE.inquiries.filter(i=>i.company.toLowerCase()===name.toLowerCase());
+  if (!matches.length) return;
+  const byC = {};
+  matches.forEach(i=>{ if(!byC[i.contact]) byC[i.contact]=i; });
+  const keys = Object.keys(byC);
+  if (keys.length===1) { fillContact(byC[keys[0]]); }
+  else {
+    const drop2 = document.getElementById('ac-ct');
+    drop2.innerHTML = keys.map(k=>`<div class="ac-item" onmousedown="fillContact(${JSON.stringify(byC[k]).replace(/"/g,'&quot;')})"><div class="av" style="width:22px;height:22px;font-size:10px">${byC[k].customer[0]}</div>${byC[k].customer} — ${k}</div>`).join('');
+    drop2.style.display = 'block';
+  }
+}
+
+function fillContact(inq) {
+  document.getElementById('fcu').value = inq.customer||'';
+  document.getElementById('fco').value = inq.contact||'';
+  const s = document.getElementById('fsr'); if(inq.source) s.value = inq.source;
+  const d = document.getElementById('ac-ct'); if(d) d.style.display='none';
+}
+
+async function submitInq() {
+  const company  = document.getElementById('fc').value.trim();
+  const customer = document.getElementById('fcu').value.trim();
+  const contact  = document.getElementById('fco').value.trim();
+  const source   = document.getElementById('fsr').value;
+  const stage    = document.getElementById('fst').value;
+  const note     = document.getElementById('fnt').value.trim();
+  const err      = document.getElementById('fe');
+  const validProds = formProds.filter(p=>p.name.trim());
+  if (!company||!customer||!contact||!source) { err.textContent='Please fill all required fields.'; return; }
+  if (!validProds.length) { err.textContent='Please add at least one product.'; return; }
+  err.textContent='';
+
+  showLoading('Saving...');
+  if (STATE.editId) {
+    const inq = STATE.inquiries.find(i=>i.id===STATE.editId);
+    const prev = inq ? inq.stage : stage;
+    const history = JSON.parse(inq.historyRaw||JSON.stringify(inq.history||[]));
+    history.push({action: prev!==stage ? 'Stage changed to '+stage : 'Details updated', by: STATE.user.name, at: Date.now()});
+    const res = await api({action:'updateInquiry', id:STATE.editId, company, customer, contact, source, products:JSON.stringify(validProds), stage, note, history:JSON.stringify(history)});
+    if (res.success) {
+      if (inq) { Object.assign(inq,{company,customer,contact,source,products:validProds,stage,note}); inq.history=history; }
+      toast('Inquiry updated!');
+    } else { toast('Error: '+res.error); }
+    STATE.editId=null; formProds=[{name:'',qty:'',rate:'',status:'Pending'}]; STATE.page='all';
+  } else {
+    const res = await api({action:'addInquiry', company, customer, contact, source, products:JSON.stringify(validProds), stage, note, salesId:STATE.user.id, salesName:STATE.user.name});
+    if (res.success) {
+      STATE.inquiries.push({id:res.data.id, company, customer, contact, source, products:validProds, stage, note, salesId:STATE.user.id, salesName:STATE.user.name, createdAt:Date.now(), history:[{action:'Created — '+stage, by:STATE.user.name, at:Date.now()}]});
+      toast('Inquiry saved!');
+    } else { toast('Error: '+res.error); }
+    formProds=[{name:'',qty:'',rate:'',status:'Pending'}]; STATE.page='inquiries';
+  }
+  hideLoading(); draw();
+}
+
+// ── Detail modal ───────────────────────────────────────────
+function openDetail(id) {
+  const inq = STATE.inquiries.find(i=>i.id===id); if(!inq) return;
+  const isMgr = STATE.user.role==='manager';
+  const canEdit = inq.stage !== 'Order Complete';
+  const canMove = inq.stage !== 'Order Complete' && inq.stage !== 'Lost';
+  const prods = inq.products || [];
+  document.getElementById('ms').innerHTML = `
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="ci" style="width:44px;height:44px;font-size:17px">${inq.company[0]}</div>
+          <div>
+            <div style="font-size:16px;font-weight:600">${inq.company}</div>
+            <div style="font-size:12px;color:var(--text2)">${inq.customer} · ${inq.contact}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          ${badgeHtml(inq.stage)}
+          <button class="btn-ghost" onclick="closeModal()" title="Close"><i class="ti ti-x" style="font-size:16px"></i></button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="detail-row"><span class="detail-lbl">Source</span><span class="detail-val">${inq.source}</span></div>
+        <div class="detail-row"><span class="detail-lbl">Sales person</span><span class="detail-val">${inq.salesName}</span></div>
+        <div class="detail-row"><span class="detail-lbl">Created</span><span class="detail-val">${new Date(inq.createdAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</span></div>
+        ${inq.note?`<div class="detail-row"><span class="detail-lbl">Note</span><span class="detail-val">${inq.note}</span></div>`:''}
+        ${inq.lostReason?`<div class="detail-row"><span class="detail-lbl" style="color:var(--red)">Lost reason</span><span class="detail-val" style="color:var(--red);font-weight:500">${inq.lostReason}</span></div>`:''}
+        <div class="divider"></div>
+        <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Products (${prods.length})</div>
+        <div class="tbl-wrap" style="margin-bottom:4px">
+          <table class="prod-tbl">
+            <thead><tr><th style="width:36%">Product</th><th style="width:18%">Qty</th><th style="width:22%">Rate given</th><th style="width:24%">Status</th></tr></thead>
+            <tbody id="prod-detail-body"></tbody>
+          </table>
+        </div>
+        ${canMove?`
+        <div class="divider"></div>
+        <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Move stage</div>
+        <div class="stage-pills">
+          ${STAGES.filter(s=>s!=='Lost'&&s!==inq.stage).map(s=>`<button class="stage-pill" onclick="moveStage('${id}','${s}')">${s}</button>`).join('')}
+          <button class="stage-pill lost-pill" onclick="showLostForm()"><i class="ti ti-x" style="font-size:12px"></i> Mark as lost</button>
+        </div>
+        <div id="lost-form" style="display:none" class="lost-form">
+          <div class="fg"><label>Reason for losing</label>
+          <select id="lrs" onchange="document.getElementById('lrc').style.display=this.value==='More'?'block':'none'">
+            <option value="">Select reason...</option>
+            ${LOST_R.map(r=>`<option>${r}</option>`).join('')}
+            <option value="More">More (type below)</option>
+          </select></div>
+          <div id="lrc" class="fg" style="display:none"><label>Custom reason</label><input id="lrt" placeholder="Enter reason..."></div>
+          <button class="btn btn-danger btn-sm" onclick="confirmLost('${id}')"><i class="ti ti-check"></i> Confirm lost</button>
+        </div>`:''}
+        <div class="divider"></div>
+        <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Activity history</div>
+        <div>${(inq.history||[]).slice().reverse().map(h=>`<div class="hist-item"><span class="hist-time">${fd(h.at)}</span><span class="hist-txt">${h.action} <span style="color:var(--text3)">· ${h.by}</span></span></div>`).join('')}</div>
+      </div>
+      ${isMgr?`<div class="modal-foot">
+        <button class="btn btn-sm" onclick="openEdit('${id}')"><i class="ti ti-edit"></i> Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="delInq('${id}')"><i class="ti ti-trash"></i> Delete</button>
+      </div>`:''}
+    </div>
+  </div>`;
+  renderProdDetail(id, prods, canEdit);
+}
+
+function renderProdDetail(id, prods, canEdit) {
+  const tb = document.getElementById('prod-detail-body'); if(!tb) return;
+  tb.innerHTML = prods.map((p,idx)=>`<tr>
+    <td style="font-weight:600">${p.name}</td>
+    <td style="color:var(--text2)">${p.qty||'—'}</td>
+    <td>${canEdit
+      ?`<input value="${p.rate||''}" placeholder="₹45/pc" onchange="updateRate('${id}',${idx},this.value)" style="font-size:13px;color:var(--brand);font-weight:600;font-family:'DM Mono',monospace;padding:4px 8px">`
+      :`<span class="rate-val">${p.rate||'—'}</span>`
+    }</td>
+    <td>${canEdit
+      ?`<select onchange="updateProdStatus('${id}',${idx},this.value)" style="font-size:12px;padding:4px 8px">${PROD_STATUS.map(s=>`<option ${p.status===s?'selected':''}>${s}</option>`).join('')}</select>`
+      :`<span style="color:var(--text2)">${p.status}</span>`
+    }</td>
+  </tr>`).join('');
+}
+
+async function updateRate(id, idx, val) {
+  const inq = STATE.inquiries.find(i=>i.id===id); if(!inq) return;
+  inq.products[idx].rate = val;
+  inq.history = inq.history||[];
+  inq.history.push({action:`Rate updated for ${inq.products[idx].name} → ${val}`, by:STATE.user.name, at:Date.now()});
+  await api({action:'updateInquiry', id, products:JSON.stringify(inq.products), history:JSON.stringify(inq.history)});
+  toast('Rate saved!');
+}
+
+async function updateProdStatus(id, idx, status) {
+  const inq = STATE.inquiries.find(i=>i.id===id); if(!inq) return;
+  inq.products[idx].status = status;
+  inq.history = inq.history||[];
+  inq.history.push({action:`${inq.products[idx].name} → ${status}`, by:STATE.user.name, at:Date.now()});
+  await api({action:'updateInquiry', id, products:JSON.stringify(inq.products), history:JSON.stringify(inq.history)});
+}
+
+function closeModal() { const ms=document.getElementById('ms'); if(ms) ms.innerHTML=''; }
+function showLostForm() { document.getElementById('lost-form').style.display='block'; }
+
+async function moveStage(id, stage) {
+  const inq = STATE.inquiries.find(i=>i.id===id); if(!inq) return;
+  inq.stage = stage;
+  inq.history = inq.history||[];
+  inq.history.push({action:'Stage moved to '+stage, by:STATE.user.name, at:Date.now()});
+  showLoading('Updating...');
+  await api({action:'updateInquiry', id, stage, history:JSON.stringify(inq.history)});
+  hideLoading(); closeModal(); toast('Stage updated!'); renderPage();
+}
+
+async function confirmLost(id) {
+  const sel = document.getElementById('lrs').value;
+  const reason = sel==='More' ? (document.getElementById('lrt').value.trim()) : sel;
+  if (!reason) { alert('Please select or enter a reason.'); return; }
+  const inq = STATE.inquiries.find(i=>i.id===id); if(!inq) return;
+  inq.stage='Lost'; inq.lostReason=reason;
+  inq.history=inq.history||[];
+  inq.history.push({action:'Marked lost — '+reason, by:STATE.user.name, at:Date.now()});
+  showLoading('Updating...');
+  await api({action:'updateInquiry', id, stage:'Lost', lostReason:reason, history:JSON.stringify(inq.history)});
+  hideLoading(); closeModal(); toast('Marked as lost.'); renderPage();
+}
+
+function openEdit(id) {
+  closeModal();
+  formProds=[{name:'',qty:'',rate:'',status:'Pending'}];
+  STATE.editId=id; STATE.page='new';
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.toggle('active',el.textContent.trim()==='New Inquiry'));
+  renderPage();
+}
+
+async function delInq(id) {
+  if (!confirm('Permanently delete this inquiry?')) return;
+  showLoading('Deleting...');
+  await api({action:'deleteInquiry', id});
+  STATE.inquiries = STATE.inquiries.filter(i=>i.id!==id);
+  hideLoading(); closeModal(); toast('Inquiry deleted.'); renderPage();
+}
+
+// ── Users ──────────────────────────────────────────────────
+function pgUsers(ca) {
+  ca.innerHTML = `
+  <div style="max-width:500px">
+    <div class="page-head">
+      <div><div class="page-title">Users</div><div class="page-sub">Manage your sales team</div></div>
+      <button class="btn btn-primary btn-sm" onclick="showAddUser()"><i class="ti ti-plus"></i> Add user</button>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      ${STATE.users.map(u=>`<div class="user-row">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="av">${u.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+          <div><div style="font-size:14px;font-weight:600">${u.name}</div><div style="font-size:12px;color:var(--text2)">${u.role==='manager'?'Full access — can edit & delete':'Sales access — can log & update inquiries'}</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="role-tag ${u.role==='manager'?'tag-mgr':'tag-sales'}">${u.role}</span>
+          ${u.role!=='manager'?`<button class="btn btn-icon btn-sm btn-danger" onclick="removeUser('${u.id}')" title="Remove"><i class="ti ti-trash" style="font-size:13px"></i></button>`:''}
+        </div>
+      </div>`).join('')}
+    </div>
+    <div id="add-user-panel" style="display:none" class="card">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Add sales user</div>
+      <div class="fg"><label>Full name <span class="req">*</span></label><input id="nu-n" placeholder="Full name"></div>
+      <div class="fg"><label>Password <span class="req">*</span></label><input id="nu-p" type="password" placeholder="Set a password"></div>
+      <div class="form-err" id="nu-err"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary btn-sm" onclick="addUser()"><i class="ti ti-check"></i> Add user</button>
+        <button class="btn btn-sm" onclick="document.getElementById('add-user-panel').style.display='none'">Cancel</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function showAddUser() { document.getElementById('add-user-panel').style.display='block'; document.getElementById('nu-n').focus(); }
+
+async function addUser() {
+  const name = document.getElementById('nu-n').value.trim();
+  const pass = document.getElementById('nu-p').value;
+  const err  = document.getElementById('nu-err');
+  if (!name||!pass) { err.textContent='Name and password are required.'; return; }
+  if (STATE.users.find(u=>u.name.toLowerCase()===name.toLowerCase())) { err.textContent='A user with this name already exists.'; return; }
+  showLoading('Adding user...');
+  const res = await api({action:'addUser', name, password:pass});
+  if (res.success) { STATE.users.push(res.data); toast('User added!'); }
+  else { toast('Error: '+res.error); }
+  hideLoading(); pgUsers(document.getElementById('ca'));
+}
+
+async function removeUser(id) {
+  if (!confirm('Remove this user?')) return;
+  showLoading('Removing...');
+  await api({action:'removeUser', id});
+  STATE.users = STATE.users.filter(u=>u.id!==id);
+  hideLoading(); toast('User removed.'); pgUsers(document.getElementById('ca'));
+}
+
+// ── Helpers ────────────────────────────────────────────────
+function badgeHtml(stage) {
+  return `<span class="badge ${BADGE_CLS[stage]||'b-new'}"><span class="badge-dot ${DOT_CLS[stage]||'bd-new'}"></span>${stage}</span>`;
+}
+function fd(ts) {
+  return new Date(Number(ts)).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+// ── Boot ───────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
