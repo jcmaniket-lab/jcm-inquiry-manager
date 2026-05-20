@@ -248,9 +248,20 @@ function toast(msg,d=2500) {
 async function init() {
   showLoad('Starting up...');
   const [ur,ir] = await Promise.all([api({action:'getUsers'}),api({action:'getInquiries'})]);
-  S.users = ur.success ? ur.data : [];
-  S.inquiries = ir.success ? ir.data : [];
+  S.users = ur.success ? ur.data.map(u=>({...u, password:String(u.password)})) : [];
+  S.inquiries = ir.success ? ir.data.map(normalizeInquiry) : [];
   hideLoad(); draw();
+}
+
+function normalizeInquiry(i) {
+  // Fix field name mismatches from Google Sheets (snake_case → camelCase)
+  i.salesId   = i.salesId   || i.sales_id   || i['sales_id']   || '';
+  i.salesName = i.salesName || i.sales_name || i['sales_name'] || '';
+  i.lostReason= i.lostReason|| i.lost_reason|| i['lost_reason']|| '';
+  i.createdAt = i.createdAt || (i.created_at ? new Date(i.created_at).getTime() : Date.now());
+  i.products  = Array.isArray(i.products) ? i.products : [];
+  i.history   = Array.isArray(i.history)  ? i.history  : [];
+  return i;
 }
 
 function draw() { document.getElementById('app').innerHTML=''; buildApp(); }
@@ -288,7 +299,7 @@ function buildLogin() {
 function doLogin() {
   const n=document.getElementById('ln').value.trim().toLowerCase();
   const p=document.getElementById('lp').value;
-  const u=S.users.find(x=>x.name.toLowerCase()===n&&x.password===p);
+  const u=S.users.find(x=>x.name.toLowerCase()===n&&String(x.password)===String(p));
   if(!u){document.getElementById('lerr').textContent='Incorrect name or password.';return;}
   S.user=u; S.page=u.role==='manager'?'dashboard':'inquiries'; draw();
 }
@@ -392,7 +403,7 @@ async function doChangePassword() {
   const cf=document.getElementById('cp-conf').value;
   const err=document.getElementById('cp-err');
   if(!old||!nw||!cf){err.textContent='All fields are required.';return;}
-  if(old!==S.user.password){err.textContent='Current password is incorrect.';return;}
+  if(String(old)!==String(S.user.password)){err.textContent='Current password is incorrect.';return;}
   if(nw!==cf){err.textContent='New passwords do not match.';return;}
   if(nw.length<4){err.textContent='Password must be at least 4 characters.';return;}
   showLoad('Updating password...');
