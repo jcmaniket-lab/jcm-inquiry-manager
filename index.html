@@ -447,7 +447,7 @@ function pgDash(ca) {
         <div>${(i.products||[]).map(p=>`<div class="k-prod-line"><span>· ${p.name}${p.qty?` <span style="opacity:.6">(${p.qty})</span>`:''}</span>${p.rate?`<span class="k-rate">${p.rate}</span>`:''}</div>`).join('')}</div>
         <div class="k-foot">
           <span class="k-sales"><i class="ti ti-user" style="font-size:11px"></i>${i.salesName}</span>
-          <span class="k-date">${fd(i.createdAt)}</span>
+          <span class="k-date">${fd(lastUpdated(i))}</span>
         </div>
       </div>`).join(''):'<div class="k-empty">No inquiries</div>'}
     </div>`;
@@ -525,7 +525,7 @@ function inqTable(list, showEdit) {
       <td style="text-align:center;font-weight:600">${(i.products||[]).length}</td>
       <td>${i.source}</td>
       <td>${badgeHtml(i.stage)}</td>
-      <td style="color:var(--text3);font-size:12px">${fd(i.createdAt)}</td>
+      <td style="color:var(--text3);font-size:12px">${fd(lastUpdated(i))}</td>
     </tr>`).join(''):'<tr><td colspan="7"><div class="tbl-empty"><i class="ti ti-inbox"></i>No inquiries yet</div></td></tr>'}</tbody>
   </table></div>`;
 }
@@ -543,7 +543,7 @@ function salesAllTable(list) {
       <td>${i.source}</td>
       <td>${badgeHtml(i.stage)}${i.lostReason?`<br><span style="font-size:11px;color:var(--red)">${i.lostReason}</span>`:''}</td>
       <td style="color:var(--text2)">${i.salesName}</td>
-      <td style="color:var(--text3);font-size:12px">${fd(i.createdAt)}</td>
+      <td style="color:var(--text3);font-size:12px">${fd(lastUpdated(i))}</td>
     </tr>`).join(''):'<tr><td colspan="8"><div class="tbl-empty"><i class="ti ti-search"></i>No records</div></td></tr>'}</tbody>
   </table></div>`;
 }
@@ -910,6 +910,15 @@ async function removeUser(id){
 // ── Helpers ────────────────────────────────────────────────
 function badgeHtml(s){return `<span class="badge ${BADGE_CLS[s]||'b-new'}"><span class="badge-dot ${DOT_CLS[s]||'bd-new'}"></span>${s}</span>`;}
 function fd(ts){return new Date(Number(ts)).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}
+function lastUpdated(inq){
+  // Get the timestamp of the last activity history entry, fallback to createdAt
+  const hist = inq.history || [];
+  if(hist.length > 0){
+    const last = hist[hist.length - 1];
+    return last.at ? Number(last.at) : inq.createdAt;
+  }
+  return inq.createdAt;
+}
 
 // ── Boot ───────────────────────────────────────────────────
 init();
