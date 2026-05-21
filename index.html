@@ -464,7 +464,7 @@ function pgDash(ca) {
       <td style="color:var(--text2)">${(i.products||[]).map(p=>p.name).join(', ')}</td>
       <td style="color:var(--red)">${i.lostReason||'—'}</td>
       <td style="color:var(--text2)">${i.salesName}</td>
-      <td style="color:var(--text3)">${fd(i.createdAt)}</td>
+      <td style="color:var(--text3)">${fd(lastUpdated(i))}</td>
     </tr>`).join('')}</tbody>
   </table></div>`;
 }
@@ -560,7 +560,7 @@ function mgrTable(list) {
       <td onclick="openDetail('${i.id}')">${i.source}</td>
       <td onclick="openDetail('${i.id}')">${badgeHtml(i.stage)}${i.lostReason?`<br><span style="font-size:11px;color:var(--red)">${i.lostReason}</span>`:''}</td>
       <td onclick="openDetail('${i.id}')" style="color:var(--text2)">${i.salesName}</td>
-      <td onclick="openDetail('${i.id}')" style="color:var(--text3);font-size:12px">${fd(i.createdAt)}</td>
+      <td onclick="openDetail('${i.id}')" style="color:var(--text3);font-size:12px">${fd(lastUpdated(i))}</td>
       <td><div style="display:flex;gap:3px">
         <button class="btn btn-icon btn-sm" onclick="openEdit('${i.id}')" title="Edit"><i class="ti ti-edit" style="font-size:13px"></i></button>
         <button class="btn btn-icon btn-sm btn-danger" onclick="delInq('${i.id}')" title="Delete"><i class="ti ti-trash" style="font-size:13px"></i></button>
