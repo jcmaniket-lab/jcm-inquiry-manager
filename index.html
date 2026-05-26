@@ -249,7 +249,7 @@ function toast(msg,d=2500) {
 async function init() {
   showLoad('Starting up...');
   const [ur,ir] = await Promise.all([api({action:'getUsers'}),api({action:'getInquiries'})]);
-  S.users = ur.success ? ur.data.map(u=>({...u, password:String(u.password)})) : [];
+  S.users = ur.success ? ur.data.map(u=>({...u, password:String(u.password).trim()})) : [];
   S.inquiries = ir.success ? ir.data.map(normalizeInquiry) : [];
   hideLoad(); draw();
 }
@@ -299,9 +299,16 @@ function buildLogin() {
 
 function doLogin() {
   const n=document.getElementById('ln').value.trim().toLowerCase();
-  const p=document.getElementById('lp').value;
-  const u=S.users.find(x=>x.name.toLowerCase()===n&&String(x.password)===String(p));
-  if(!u){document.getElementById('lerr').textContent='Incorrect name or password.';return;}
+  const p=document.getElementById('lp').value.trim();
+  // Compare as strings, trim whitespace from both sides
+  const u=S.users.find(x=>x.name.toLowerCase().trim()===n && String(x.password).trim()===String(p).trim());
+  if(!u){
+    // Debug: log what we have vs what was entered
+    console.log('Login attempt:', n, '| entered pw:', p);
+    console.log('Users loaded:', S.users.map(x=>({name:x.name, pw:String(x.password), type:typeof x.password})));
+    document.getElementById('lerr').textContent='Incorrect name or password.';
+    return;
+  }
   S.user=u; S.page=u.role==='manager'?'dashboard':'inquiries'; draw();
 }
 function doLogout(){S.user=null;draw();}
