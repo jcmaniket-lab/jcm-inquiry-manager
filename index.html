@@ -263,6 +263,11 @@ function normalizeInquiry(i) {
   i.createdAt = i.createdAt || (i.created_at ? new Date(i.created_at).getTime() : Date.now());
   i.products  = Array.isArray(i.products) ? i.products : [];
   i.history   = Array.isArray(i.history)  ? i.history  : [];
+  // Fallback: extract lost reason from history if not stored directly
+  if (!i.lostReason && i.stage === 'Lost' && i.history.length > 0) {
+    const lostEntry = i.history.slice().reverse().find(h => h.action && h.action.includes('lost —'));
+    if (lostEntry) i.lostReason = lostEntry.action.replace('Marked lost — ', '').trim();
+  }
   return i;
 }
 
