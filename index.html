@@ -308,8 +308,9 @@ async function pollForUpdates() {
       const lastH = (u.history||[]).slice(-1)[0];
       toast(`🔄 ${u.company} updated${lastH?' — '+lastH.action.substring(0,30):''}`, 3500);
     }
-    // Re-render current page silently
-    renderPage();
+    // Skip re-render if user is on the new inquiry form OR has a modal open
+    const modalOpen = document.getElementById('ms') && document.getElementById('ms').innerHTML.trim() !== '';
+    if(S.page !== 'new' && !modalOpen) renderPage();
     updateLiveBar();
   } catch(e) { console.log('Poll error:', e); }
 }
